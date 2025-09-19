@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Chatbot</title>
+  <style>
+    .chatbox {
+      width: 350px;
+      height: 450px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .msg {
+      padding: 8px 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .user { background: #daf1da; text-align: right; margin-left: auto; }
+    .bot { background: #f1f1f1; text-align: left; margin-right: auto; }
+    input {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbox">
+    <div class="messages"></div>
+    <input type="text" placeholder="Type your message..." autofocus />
+  </div>
+
+  <script>
+    const input = document.querySelector("input");
+    const messages = document.querySelector(".messages");
+
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter" && input.value.trim() !== "") {
+        const userMsg = input.value.trim();
+        addMessage(userMsg, "user");
+        input.value = "";
+        input.focus();
+
+        // Send message to Flask backend
+        fetch("http://127.0.0.1:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMsg })
+        })
+        .then(res => res.json())
+        .then(data => addMessage(data.reply, "bot"))
+        .catch(err => addMessage("Error: Could not reach server", "bot"));
+      }
+    });
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("msg", sender);
+      msg.innerText = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
+</body>
+</html>
